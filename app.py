@@ -235,10 +235,8 @@ def main():
     # Hero header
     st.markdown("""
     <div class="hero">
-        <div class="badge">AI-Powered · Stacking Ensemble</div>
-        <h1>🎓 Student Performance Predictor</h1>
-        <p>Combines Random Forest · XGBoost · Logistic Regression · Neural Network
-           into one intelligent prediction engine.</p>
+        <h1>Student Performance Predictor</h1>
+        <p>Enter student details to predict pass or fail outcome.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -325,62 +323,65 @@ def main():
         for k, v in summary.items():
             st.markdown(f"- **{k}**: {v}")
 
-    # ── Model performance section ─────────────────────────────
+    # ── Dynamic Visualizations ─────────────────────────────────────
     st.markdown("---")
-    st.markdown("<div class='section-title'>📊 Model Performance Comparison</div>",
+    st.markdown("<div class='section-title'>Student Profile Analysis</div>",
                 unsafe_allow_html=True)
 
-    results_path = os.path.join(config.OUTPUT_DIR, "model_results.csv")
-    if os.path.exists(results_path):
-        df_res = pd.read_csv(results_path).sort_values("accuracy", ascending=False)
-        df_res.index = range(1, len(df_res)+1)
+    # Risk factors bar chart
+    risk_data = []
+    if raw_input["failures"] >= 1:
+        risk_data.append(("Past Failures", raw_input["failures"] * 25))
+    if raw_input["absences"] > 8:
+        risk_data.append(("Absences", min(raw_input["absences"] * 3, 100)))
+    if raw_input["studytime"] == 1:
+        risk_data.append(("Study Time", 75))
+    elif raw_input["studytime"] == 2:
+        risk_data.append(("Study Time", 50))
+    if raw_input["Dalc"] + raw_input["Walc"] >= 5:
+        risk_data.append(("Alcohol", (raw_input["Dalc"] + raw_input["Walc"]) * 20))
+    if raw_input["higher"] == "no":
+        risk_data.append(("Higher Edu", 40))
+    if raw_input["internet"] == "no":
+        risk_data.append(("Internet", 35))
+    if raw_input["famrel"] <= 2:
+        risk_data.append(("Family Relations", (5 - raw_input["famrel"]) * 25))
 
-        # Highlight ensemble row
-        def highlight_ensemble(row):
-            if "Ensemble" in str(row["model"]):
-                return ["background-color: #e8f5e9; font-weight: bold"] * len(row)
-            return [""] * len(row)
+    if risk_data:
+        df_risk = pd.DataFrame(risk_data, columns=["Factor", "Risk Score"])
+        st.bar_chart(df_risk.set_index("Factor"))
 
-        df_display = df_res[["model","accuracy","roc_auc"]].copy()
-        df_display["accuracy"] = df_display["accuracy"].map("{:.4f}".format)
-        df_display["roc_auc"]  = df_display["roc_auc"].map("{:.4f}".format)
-        st.dataframe(df_display.style.apply(highlight_ensemble, axis=1),
-                     use_container_width=True)
+    # Positive factors bar chart
+    pos_data = []
+    if raw_input["studytime"] >= 3:
+        pos_data.append(("Study Time", raw_input["studytime"] * 25))
+    if raw_input["higher"] == "yes":
+        pos_data.append(("Higher Edu", 50))
+    if raw_input["internet"] == "yes":
+        pos_data.append(("Internet", 40))
+    if raw_input["famsup"] == "yes":
+        pos_data.append(("Family Support", 35))
+    if raw_input["schoolsup"] == "yes":
+        pos_data.append(("School Support", 35))
+    if raw_input["famrel"] >= 4:
+        pos_data.append(("Family Relations", raw_input["famrel"] * 20))
+    if raw_input["activities"] == "yes":
+        pos_data.append(("Activities", 25))
 
-    comp_img = os.path.join(config.OUTPUT_DIR, "model_comparison.png")
-    roc_img  = os.path.join(config.OUTPUT_DIR, "roc_curves.png")
-    if os.path.exists(comp_img) and os.path.exists(roc_img):
-        c1, c2 = st.columns(2)
-        c1.image(comp_img, caption="Accuracy & AUC Comparison", use_container_width=True)
-        c2.image(roc_img,  caption="ROC Curves",               use_container_width=True)
+    if pos_data:
+        st.markdown("<div class='section-title'>Positive Factors</div>",
+                    unsafe_allow_html=True)
+        df_pos = pd.DataFrame(pos_data, columns=["Factor", "Impact Score"])
+        st.bar_chart(df_pos.set_index("Factor"))
 
-    # ── EDA plots ─────────────────────────────────────────────
-    st.markdown("---")
-    st.markdown("<div class='section-title'>📈 Data Insights</div>",
+    # Probability gauge visualization
+    st.markdown("<div class='section-title'>Pass Probability Gauge</div>",
                 unsafe_allow_html=True)
-    eda = {
-        "Grade Distribution":      "01_grade_distribution.png",
-        "Feature Correlations":    "02_correlation_heatmap.png",
-        "Study Time vs Pass Rate": "03_studytime_vs_passrate.png",
-        "Failures vs Pass Rate":   "04_failures_vs_passrate.png",
-    }
-    cols = st.columns(2)
-    for i, (title, fname) in enumerate(eda.items()):
-        path = os.path.join(config.OUTPUT_DIR, fname)
-        if os.path.exists(path):
-            cols[i%2].image(path, caption=title, use_container_width=True)
-
-    # ANN training history
-    ann_hist = os.path.join(config.OUTPUT_DIR, "ann_training_history.png")
-    if os.path.exists(ann_hist):
-        st.image(ann_hist, caption="ANN Training History", use_container_width=True)
-
-    st.markdown("---")
-    st.markdown(
-        "<small>Stacking Ensemble: Random Forest · XGBoost · "
-        "Logistic Regression · Neural Network</small>",
-        unsafe_allow_html=True,
-    )
+    gauge_data = pd.DataFrame({
+        "Category": ["FAIL", "PASS"],
+        "Probability": [prob_fail * 100, prob_pass * 100]
+    })
+    st.bar_chart(gauge_data.set_index("Category"))
 
 
 if __name__ == "__main__":
