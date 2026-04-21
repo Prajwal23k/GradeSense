@@ -7,6 +7,8 @@ import os, pickle, warnings
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 warnings.filterwarnings("ignore")
@@ -132,57 +134,64 @@ def sidebar_inputs():
     st.sidebar.markdown("**📚 Academics**")
     studytime = st.sidebar.selectbox(
         "Weekly Study Time",
-        [1,2,3,4],
-        format_func=lambda x:{1:"< 2 hrs",2:"2–5 hrs",3:"5–10 hrs",4:"> 10 hrs"}[x],
+        [1, 2, 3, 4],
+        format_func=lambda x: {1: "< 2 hrs", 2: "2–5 hrs", 3: "5–10 hrs", 4: "> 10 hrs"}[x],
     )
     failures = st.sidebar.slider("Past Class Failures", 0, 3, 0)
     absences = st.sidebar.slider("Number of Absences", 0, 93, 5)
 
     st.sidebar.markdown("**👤 Personal**")
-    age      = st.sidebar.slider("Age", 15, 22, 17)
-    sex      = st.sidebar.radio("Sex", ["F","M"], horizontal=True)
-    address  = st.sidebar.radio("Address", ["U","R"],
-                                 format_func=lambda x:"Urban" if x=="U" else "Rural",
-                                 horizontal=True)
-    famsize  = st.sidebar.radio("Family Size", ["GT3","LE3"],
-                                 format_func=lambda x:"> 3 members" if x=="GT3" else "≤ 3 members",
-                                 horizontal=True)
-    Pstatus  = st.sidebar.radio("Parents Status", ["T","A"],
-                                 format_func=lambda x:"Together" if x=="T" else "Apart",
-                                 horizontal=True)
-    romantic = st.sidebar.radio("In Relationship", ["yes","no"], horizontal=True)
+    age     = st.sidebar.slider("Age", 15, 22, 17)
+    sex     = st.sidebar.radio("Sex", ["F", "M"], horizontal=True)
+    address = st.sidebar.radio(
+        "Address", ["U", "R"],
+        format_func=lambda x: "Urban" if x == "U" else "Rural",
+        horizontal=True,
+    )
+    famsize = st.sidebar.radio(
+        "Family Size", ["GT3", "LE3"],
+        format_func=lambda x: "> 3 members" if x == "GT3" else "≤ 3 members",
+        horizontal=True,
+    )
+    Pstatus = st.sidebar.radio(
+        "Parents Status", ["T", "A"],
+        format_func=lambda x: "Together" if x == "T" else "Apart",
+        horizontal=True,
+    )
+    romantic = st.sidebar.radio("In Relationship", ["yes", "no"], horizontal=True)
 
     st.sidebar.markdown("**🏫 School**")
-    school    = st.sidebar.radio("School", ["GP","MS"], horizontal=True)
-    schoolsup = st.sidebar.radio("School Support", ["yes","no"], horizontal=True)
-    famsup    = st.sidebar.radio("Family Support", ["yes","no"], horizontal=True)
-    paid      = st.sidebar.radio("Paid Extra Classes", ["yes","no"], horizontal=True)
-    activities= st.sidebar.radio("Extracurricular", ["yes","no"], horizontal=True)
-    internet  = st.sidebar.radio("Internet at Home", ["yes","no"], horizontal=True)
-    higher    = st.sidebar.radio("Wants Higher Edu", ["yes","no"], horizontal=True)
-    nursery   = st.sidebar.radio("Attended Nursery", ["yes","no"], horizontal=True)
-    reason    = st.sidebar.selectbox("School Choice Reason",
-                                      ["course","home","other","reputation"])
-    traveltime= st.sidebar.selectbox("Travel Time",
-                                      [1,2,3,4],
-                                      format_func=lambda x:{1:"< 15 min",2:"15–30 min",
-                                                            3:"30–60 min",4:"> 1 hr"}[x])
+    school     = st.sidebar.radio("School", ["GP", "MS"], horizontal=True)
+    schoolsup  = st.sidebar.radio("School Support",      ["yes", "no"], horizontal=True)
+    famsup     = st.sidebar.radio("Family Support",      ["yes", "no"], horizontal=True)
+    paid       = st.sidebar.radio("Paid Extra Classes",  ["yes", "no"], horizontal=True)
+    activities = st.sidebar.radio("Extracurricular",     ["yes", "no"], horizontal=True)
+    internet   = st.sidebar.radio("Internet at Home",    ["yes", "no"], horizontal=True)
+    higher     = st.sidebar.radio("Wants Higher Edu",    ["yes", "no"], horizontal=True)
+    nursery    = st.sidebar.radio("Attended Nursery",    ["yes", "no"], horizontal=True)
+    reason     = st.sidebar.selectbox(
+        "School Choice Reason", ["course", "home", "other", "reputation"]
+    )
+    traveltime = st.sidebar.selectbox(
+        "Travel Time", [1, 2, 3, 4],
+        format_func=lambda x: {1: "< 15 min", 2: "15–30 min", 3: "30–60 min", 4: "> 1 hr"}[x],
+    )
 
     st.sidebar.markdown("**👨‍👩‍👧 Parents**")
     Medu     = st.sidebar.slider("Mother Education (0–4)", 0, 4, 2)
     Fedu     = st.sidebar.slider("Father Education (0–4)", 0, 4, 2)
     Mjob     = st.sidebar.selectbox("Mother's Job",
-                                     ["at_home","health","other","services","teacher"])
+                                     ["at_home", "health", "other", "services", "teacher"])
     Fjob     = st.sidebar.selectbox("Father's Job",
-                                     ["at_home","health","other","services","teacher"])
-    guardian = st.sidebar.selectbox("Guardian", ["mother","father","other"])
+                                     ["at_home", "health", "other", "services", "teacher"])
+    guardian = st.sidebar.selectbox("Guardian", ["mother", "father", "other"])
 
     st.sidebar.markdown("**🎭 Social & Lifestyle**")
-    freetime = st.sidebar.slider("Free Time (1–5)", 1, 5, 3)
-    goout    = st.sidebar.slider("Goes Out (1–5)", 1, 5, 3)
-    Dalc     = st.sidebar.slider("Weekday Alcohol (1–5)", 1, 5, 1)
-    Walc     = st.sidebar.slider("Weekend Alcohol (1–5)", 1, 5, 2)
-    health   = st.sidebar.slider("Health Status (1–5)", 1, 5, 3)
+    freetime = st.sidebar.slider("Free Time (1–5)",        1, 5, 3)
+    goout    = st.sidebar.slider("Goes Out (1–5)",         1, 5, 3)
+    Dalc     = st.sidebar.slider("Weekday Alcohol (1–5)",  1, 5, 1)
+    Walc     = st.sidebar.slider("Weekend Alcohol (1–5)",  1, 5, 2)
+    health   = st.sidebar.slider("Health Status (1–5)",    1, 5, 3)
     famrel   = st.sidebar.slider("Family Relations (1–5)", 1, 5, 4)
 
     return dict(
@@ -198,26 +207,26 @@ def sidebar_inputs():
     )
 
 
-# ── Risk breakdown ────────────────────────────────────────────────────────────
-def risk_factors(raw_input):
+# ── Risk text breakdown ───────────────────────────────────────────────────────
+def risk_flags(raw_input):
     flags = []
     if raw_input["failures"] >= 2:
-        flags.append(("🔴", "High", f"{raw_input['failures']} past failures"))
+        flags.append(("🔴", "High",   f"{raw_input['failures']} past failures"))
     elif raw_input["failures"] == 1:
         flags.append(("🟡", "Medium", "1 past failure"))
 
     if raw_input["absences"] > 15:
-        flags.append(("🔴", "High", f"{raw_input['absences']} absences (high)"))
+        flags.append(("🔴", "High",   f"{raw_input['absences']} absences (high)"))
     elif raw_input["absences"] > 8:
         flags.append(("🟡", "Medium", f"{raw_input['absences']} absences"))
 
     if raw_input["studytime"] == 1:
-        flags.append(("🔴", "High", "Very low study time (< 2 hrs/week)"))
+        flags.append(("🔴", "High",   "Very low study time (< 2 hrs/week)"))
     elif raw_input["studytime"] == 2:
         flags.append(("🟡", "Medium", "Below-average study time (2–5 hrs/week)"))
 
     if raw_input["Dalc"] + raw_input["Walc"] >= 7:
-        flags.append(("🔴", "High", "High total alcohol consumption"))
+        flags.append(("🔴", "High",   "High total alcohol consumption"))
     elif raw_input["Dalc"] + raw_input["Walc"] >= 5:
         flags.append(("🟡", "Medium", "Moderate alcohol consumption"))
 
@@ -230,13 +239,171 @@ def risk_factors(raw_input):
     return flags
 
 
+# ── Plotly charts ─────────────────────────────────────────────────────────────
+def plotly_gauge(prob_pass):
+    """Gauge chart showing pass probability."""
+    color = "green" if prob_pass >= 0.5 else "red"
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number+delta",
+        value=round(prob_pass * 100, 1),
+        delta={"reference": 50, "suffix": "%"},
+        title={"text": "Pass Probability", "font": {"size": 18}},
+        number={"suffix": "%", "font": {"size": 28}},
+        gauge={
+            "axis": {"range": [0, 100], "tickwidth": 1},
+            "bar":  {"color": color, "thickness": 0.25},
+            "steps": [
+                {"range": [0,  40], "color": "#fde8e8"},
+                {"range": [40, 60], "color": "#fef9e7"},
+                {"range": [60, 100], "color": "#e8f8f5"},
+            ],
+            "threshold": {
+                "line": {"color": "black", "width": 3},
+                "thickness": 0.75,
+                "value": 50,
+            },
+        },
+    ))
+    fig.update_layout(
+        height=260,
+        margin=dict(t=60, b=20, l=30, r=30),
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
+
+
+def plotly_risk_bar(raw_input):
+    """Horizontal bar chart of risk factor scores."""
+    risk_data = []
+    if raw_input["failures"] >= 1:
+        risk_data.append(("Failures", min(raw_input["failures"] * 25, 100)))
+    if raw_input["absences"] > 8:
+        risk_data.append(("Absences", min(raw_input["absences"] * 3, 100)))
+    if raw_input["studytime"] <= 2:
+        risk_data.append(("Low Study Time", 60))
+    if raw_input["Dalc"] + raw_input["Walc"] >= 5:
+        risk_data.append(("Alcohol", min((raw_input["Dalc"] + raw_input["Walc"]) * 10, 100)))
+
+    if not risk_data:
+        return None
+
+    df_risk = pd.DataFrame(risk_data, columns=["Factor", "Score"])
+    fig = px.bar(
+        df_risk,
+        x="Score",
+        y="Factor",
+        orientation="h",
+        color="Score",
+        color_continuous_scale="Reds",
+        range_color=[0, 100],
+        title="⚠️ Risk Factor Scores",
+        text="Score",
+    )
+    fig.update_traces(texttemplate="%{text}", textposition="outside")
+    fig.update_layout(
+        height=200 + len(risk_data) * 40,
+        margin=dict(t=50, b=20, l=10, r=60),
+        coloraxis_showscale=False,
+        xaxis=dict(range=[0, 115], title="Risk Score (0–100)"),
+        yaxis_title="",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
+
+
+def plotly_positive_bar(raw_input):
+    """Horizontal bar chart of positive factor scores."""
+    pos_data = []
+    if raw_input["studytime"] >= 3:
+        pos_data.append(("Study Time",     raw_input["studytime"] * 25))
+    if raw_input["higher"] == "yes":
+        pos_data.append(("Higher Edu Goal", 50))
+    if raw_input["internet"] == "yes":
+        pos_data.append(("Internet Access", 40))
+    if raw_input["famsup"] == "yes":
+        pos_data.append(("Family Support",  35))
+    if raw_input["schoolsup"] == "yes":
+        pos_data.append(("School Support",  35))
+    if raw_input["paid"] == "yes":
+        pos_data.append(("Paid Classes",    30))
+
+    if not pos_data:
+        return None
+
+    df_pos = pd.DataFrame(pos_data, columns=["Factor", "Impact"])
+    fig = px.bar(
+        df_pos,
+        x="Impact",
+        y="Factor",
+        orientation="h",
+        color="Impact",
+        color_continuous_scale="Greens",
+        range_color=[0, 100],
+        title="✅ Positive Factor Scores",
+        text="Impact",
+    )
+    fig.update_traces(texttemplate="%{text}", textposition="outside")
+    fig.update_layout(
+        height=200 + len(pos_data) * 40,
+        margin=dict(t=50, b=20, l=10, r=60),
+        coloraxis_showscale=False,
+        xaxis=dict(range=[0, 115], title="Impact Score (0–100)"),
+        yaxis_title="",
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
+
+
+def plotly_radar(raw_input):
+    """Radar chart showing the student's behavioural profile."""
+    categories = ["Study Time", "Past Failures", "Absences", "Social Life", "Health"]
+    values = [
+        raw_input["studytime"] * 25,          # 0–100
+        raw_input["failures"] * 33,            # 0–99
+        min(raw_input["absences"] * 2, 100),   # 0–100 (capped)
+        raw_input["goout"] * 20,               # 0–100
+        raw_input["health"] * 20,              # 0–100
+    ]
+    # Close the radar loop
+    categories_closed = categories + [categories[0]]
+    values_closed     = values     + [values[0]]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=values_closed,
+        theta=categories_closed,
+        fill="toself",
+        fillcolor="rgba(102,126,234,0.25)",
+        line=dict(color="#667eea", width=2),
+        name="Student Profile",
+    ))
+    fig.update_layout(
+        title=dict(text="📡 Student Behaviour Radar", font=dict(size=16)),
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100],
+                tickfont=dict(size=10),
+            ),
+            angularaxis=dict(tickfont=dict(size=12)),
+        ),
+        showlegend=False,
+        height=380,
+        margin=dict(t=60, b=40, l=60, r=60),
+        paper_bgcolor="rgba(0,0,0,0)",
+    )
+    return fig
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
-    # Hero header
+    # ── Hero ──────────────────────────────────────────────────
     st.markdown("""
     <div class="hero">
-        <h1>Student Performance Predictor</h1>
-        <p>Enter student details to predict pass or fail outcome.</p>
+        <div class="badge">AI-Powered · Stacking Ensemble</div>
+        <h1>🎓 Student Performance Predictor</h1>
+        <p>Combines Random Forest · XGBoost · Logistic Regression · Neural Network
+           into one intelligent prediction engine.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -248,15 +415,15 @@ def main():
 
     raw_input = sidebar_inputs()
 
-    # Predict on every change (live prediction)
-    X = build_input_vector(raw_input, scaler, feature_names)
+    # Live prediction
+    X         = build_input_vector(raw_input, scaler, feature_names)
     prob_pass = run_ensemble(ensemble, X)
     prob_fail = 1.0 - prob_pass
     prediction = "PASS" if prob_pass >= 0.5 else "FAIL"
     confidence = max(prob_pass, prob_fail) * 100
 
-    # ── Result card ────────────────────────────────────────────
-    col_result, col_gap, col_detail = st.columns([2, 0.15, 1.85])
+    # ── Row 1: Result card + Gauge ─────────────────────────────
+    col_result, col_gauge = st.columns([1.4, 1])
 
     with col_result:
         if prediction == "PASS":
@@ -264,15 +431,13 @@ def main():
             <div class="result-pass">
                 <h2>✅ PASS</h2>
                 <p>Confidence: <strong>{confidence:.1f}%</strong></p>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>""", unsafe_allow_html=True)
         else:
             st.markdown(f"""
             <div class="result-fail">
                 <h2>❌ FAIL</h2>
                 <p>Confidence: <strong>{confidence:.1f}%</strong></p>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>""", unsafe_allow_html=True)
 
         st.markdown("<div class='section-title'>Probability Breakdown</div>",
                     unsafe_allow_html=True)
@@ -288,100 +453,125 @@ def main():
             <div class="value" style="color:#e74c3c">{prob_fail*100:.1f}%</div>
         </div>""", unsafe_allow_html=True)
 
-        # Gauge bar
         st.markdown("<br>", unsafe_allow_html=True)
         bar_color = "#27ae60" if prediction == "PASS" else "#e74c3c"
         st.markdown(f"""
         <div style="background:#eee;border-radius:20px;height:14px;margin-top:4px">
           <div style="width:{prob_pass*100:.1f}%;background:{bar_color};
-                      height:14px;border-radius:20px;transition:width .4s ease">
-          </div>
+                      height:14px;border-radius:20px;transition:width .4s ease"></div>
         </div>
         <div style="display:flex;justify-content:space-between;
                     font-size:.75rem;color:#888;margin-top:4px">
-          <span>0% PASS</span><span>50%</span><span>100% PASS</span>
-        </div>
-        """, unsafe_allow_html=True)
+          <span>0%</span><span>50%</span><span>100% PASS</span>
+        </div>""", unsafe_allow_html=True)
 
-    with col_detail:
+    with col_gauge:
+        st.plotly_chart(plotly_gauge(prob_pass), use_container_width=True)
+
+    # ── Row 2: Risk factors + Positive factors ─────────────────
+    st.markdown("---")
+    st.markdown("<div class='section-title'>📊 Interactive Student Analysis</div>",
+                unsafe_allow_html=True)
+
+    col_risk, col_pos = st.columns(2)
+
+    with col_risk:
+        fig_risk = plotly_risk_bar(raw_input)
+        if fig_risk:
+            st.plotly_chart(fig_risk, use_container_width=True)
+        else:
+            st.success("✅ No significant risk factors detected.")
+
+    with col_pos:
+        fig_pos = plotly_positive_bar(raw_input)
+        if fig_pos:
+            st.plotly_chart(fig_pos, use_container_width=True)
+        else:
+            st.warning("⚠️ No positive factors detected. Encourage study and support.")
+
+    # ── Row 3: Radar chart + Risk text list ────────────────────
+    col_radar, col_flags = st.columns([1.2, 1])
+
+    with col_radar:
+        st.plotly_chart(plotly_radar(raw_input), use_container_width=True)
+
+    with col_flags:
         st.markdown("<div class='section-title'>Risk Factor Analysis</div>",
                     unsafe_allow_html=True)
-        for icon, level, desc in risk_factors(raw_input):
+        for icon, level, desc in risk_flags(raw_input):
             st.markdown(f"{icon} **{level}** — {desc}")
 
         st.markdown("<div class='section-title'>Key Inputs</div>",
                     unsafe_allow_html=True)
         summary = {
-            "Study Time": {1:"<2h",2:"2–5h",3:"5–10h",4:">10h"}[raw_input["studytime"]],
-            "Failures": raw_input["failures"],
-            "Absences": raw_input["absences"],
-            "Higher Edu": raw_input["higher"],
-            "Internet": raw_input["internet"],
-            "Family Relations": raw_input["famrel"],
-            "Alcohol (W+D)": raw_input["Dalc"] + raw_input["Walc"],
+            "Study Time":      {1: "<2h", 2: "2–5h", 3: "5–10h", 4: ">10h"}[raw_input["studytime"]],
+            "Failures":        raw_input["failures"],
+            "Absences":        raw_input["absences"],
+            "Higher Edu":      raw_input["higher"],
+            "Internet":        raw_input["internet"],
+            "Family Relation": raw_input["famrel"],
+            "Alcohol (W+D)":   raw_input["Dalc"] + raw_input["Walc"],
         }
         for k, v in summary.items():
             st.markdown(f"- **{k}**: {v}")
 
-    # ── Dynamic Visualizations ─────────────────────────────────────
+    # ── Model performance ──────────────────────────────────────
     st.markdown("---")
-    st.markdown("<div class='section-title'>Student Profile Analysis</div>",
+    st.markdown("<div class='section-title'>📈 Model Performance Comparison</div>",
                 unsafe_allow_html=True)
 
-    # Risk factors bar chart
-    risk_data = []
-    if raw_input["failures"] >= 1:
-        risk_data.append(("Past Failures", raw_input["failures"] * 25))
-    if raw_input["absences"] > 8:
-        risk_data.append(("Absences", min(raw_input["absences"] * 3, 100)))
-    if raw_input["studytime"] == 1:
-        risk_data.append(("Study Time", 75))
-    elif raw_input["studytime"] == 2:
-        risk_data.append(("Study Time", 50))
-    if raw_input["Dalc"] + raw_input["Walc"] >= 5:
-        risk_data.append(("Alcohol", (raw_input["Dalc"] + raw_input["Walc"]) * 20))
-    if raw_input["higher"] == "no":
-        risk_data.append(("Higher Edu", 40))
-    if raw_input["internet"] == "no":
-        risk_data.append(("Internet", 35))
-    if raw_input["famrel"] <= 2:
-        risk_data.append(("Family Relations", (5 - raw_input["famrel"]) * 25))
+    results_path = os.path.join(config.OUTPUT_DIR, "model_results.csv")
+    if os.path.exists(results_path):
+        df_res = pd.read_csv(results_path).sort_values("accuracy", ascending=False)
+        df_res.index = range(1, len(df_res) + 1)
 
-    if risk_data:
-        df_risk = pd.DataFrame(risk_data, columns=["Factor", "Risk Score"])
-        st.bar_chart(df_risk.set_index("Factor"))
+        def highlight_ensemble(row):
+            if "Ensemble" in str(row["model"]):
+                return ["background-color: #e8f5e9; font-weight: bold"] * len(row)
+            return [""] * len(row)
 
-    # Positive factors bar chart
-    pos_data = []
-    if raw_input["studytime"] >= 3:
-        pos_data.append(("Study Time", raw_input["studytime"] * 25))
-    if raw_input["higher"] == "yes":
-        pos_data.append(("Higher Edu", 50))
-    if raw_input["internet"] == "yes":
-        pos_data.append(("Internet", 40))
-    if raw_input["famsup"] == "yes":
-        pos_data.append(("Family Support", 35))
-    if raw_input["schoolsup"] == "yes":
-        pos_data.append(("School Support", 35))
-    if raw_input["famrel"] >= 4:
-        pos_data.append(("Family Relations", raw_input["famrel"] * 20))
-    if raw_input["activities"] == "yes":
-        pos_data.append(("Activities", 25))
+        df_display = df_res[["model", "accuracy", "roc_auc"]].copy()
+        df_display["accuracy"] = df_display["accuracy"].map("{:.4f}".format)
+        df_display["roc_auc"]  = df_display["roc_auc"].map("{:.4f}".format)
+        st.dataframe(
+            df_display.style.apply(highlight_ensemble, axis=1),
+            use_container_width=True,
+        )
 
-    if pos_data:
-        st.markdown("<div class='section-title'>Positive Factors</div>",
-                    unsafe_allow_html=True)
-        df_pos = pd.DataFrame(pos_data, columns=["Factor", "Impact Score"])
-        st.bar_chart(df_pos.set_index("Factor"))
+    comp_img = os.path.join(config.OUTPUT_DIR, "model_comparison.png")
+    roc_img  = os.path.join(config.OUTPUT_DIR, "roc_curves.png")
+    if os.path.exists(comp_img) and os.path.exists(roc_img):
+        c1, c2 = st.columns(2)
+        c1.image(comp_img, caption="Accuracy & AUC Comparison", use_container_width=True)
+        c2.image(roc_img,  caption="ROC Curves",                use_container_width=True)
 
-    # Probability gauge visualization
-    st.markdown("<div class='section-title'>Pass Probability Gauge</div>",
+    # ── EDA plots ──────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("<div class='section-title'>📉 Data Insights</div>",
                 unsafe_allow_html=True)
-    gauge_data = pd.DataFrame({
-        "Category": ["FAIL", "PASS"],
-        "Probability": [prob_fail * 100, prob_pass * 100]
-    })
-    st.bar_chart(gauge_data.set_index("Category"))
+    eda = {
+        "Grade Distribution":      "01_grade_distribution.png",
+        "Feature Correlations":    "02_correlation_heatmap.png",
+        "Study Time vs Pass Rate": "03_studytime_vs_passrate.png",
+        "Failures vs Pass Rate":   "04_failures_vs_passrate.png",
+    }
+    cols = st.columns(2)
+    for i, (title, fname) in enumerate(eda.items()):
+        path = os.path.join(config.OUTPUT_DIR, fname)
+        if os.path.exists(path):
+            cols[i % 2].image(path, caption=title, use_container_width=True)
+
+    ann_hist = os.path.join(config.OUTPUT_DIR, "ann_training_history.png")
+    if os.path.exists(ann_hist):
+        st.image(ann_hist, caption="ANN Training History", use_container_width=True)
+
+    # ── Footer ─────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown(
+        "<small>Stacking Ensemble: Random Forest · XGBoost · "
+        "Logistic Regression · Neural Network</small>",
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
