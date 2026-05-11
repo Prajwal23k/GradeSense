@@ -17,7 +17,7 @@ import config
 from feature_engineering import add_engineered_features
 
 st.set_page_config(
-    page_title="Student Performance Predictor",
+    page_title="GradeSense",
     page_icon="🎓",
     layout="wide",
 )
@@ -401,7 +401,7 @@ def main():
     st.markdown("""
     <div class="hero">
         <div class="badge">AI-Powered · Stacking Ensemble</div>
-        <h1>🎓 Student Performance Predictor</h1>
+        <h1>🎓 GradeSense</h1>
         <p>Combines Random Forest · XGBoost · Logistic Regression · Neural Network
            into one intelligent prediction engine.</p>
     </div>
@@ -515,63 +515,8 @@ def main():
         for k, v in summary.items():
             st.markdown(f"- **{k}**: {v}")
 
-    # ── Model performance ──────────────────────────────────────
-    st.markdown("---")
-    st.markdown("<div class='section-title'>📈 Model Performance Comparison</div>",
-                unsafe_allow_html=True)
 
-    results_path = os.path.join(config.OUTPUT_DIR, "model_results.csv")
-    if os.path.exists(results_path):
-        df_res = pd.read_csv(results_path).sort_values("accuracy", ascending=False)
-        df_res.index = range(1, len(df_res) + 1)
-
-        def highlight_ensemble(row):
-            if "Ensemble" in str(row["model"]):
-                return ["background-color: #e8f5e9; font-weight: bold"] * len(row)
-            return [""] * len(row)
-
-        df_display = df_res[["model", "accuracy", "roc_auc"]].copy()
-        df_display["accuracy"] = df_display["accuracy"].map("{:.4f}".format)
-        df_display["roc_auc"]  = df_display["roc_auc"].map("{:.4f}".format)
-        st.dataframe(
-            df_display.style.apply(highlight_ensemble, axis=1),
-            use_container_width=True,
-        )
-
-    comp_img = os.path.join(config.OUTPUT_DIR, "model_comparison.png")
-    roc_img  = os.path.join(config.OUTPUT_DIR, "roc_curves.png")
-    if os.path.exists(comp_img) and os.path.exists(roc_img):
-        c1, c2 = st.columns(2)
-        c1.image(comp_img, caption="Accuracy & AUC Comparison", use_container_width=True)
-        c2.image(roc_img,  caption="ROC Curves",                use_container_width=True)
-
-    # ── EDA plots ──────────────────────────────────────────────
-    st.markdown("---")
-    st.markdown("<div class='section-title'>📉 Data Insights</div>",
-                unsafe_allow_html=True)
-    eda = {
-        "Grade Distribution":      "01_grade_distribution.png",
-        "Feature Correlations":    "02_correlation_heatmap.png",
-        "Study Time vs Pass Rate": "03_studytime_vs_passrate.png",
-        "Failures vs Pass Rate":   "04_failures_vs_passrate.png",
-    }
-    cols = st.columns(2)
-    for i, (title, fname) in enumerate(eda.items()):
-        path = os.path.join(config.OUTPUT_DIR, fname)
-        if os.path.exists(path):
-            cols[i % 2].image(path, caption=title, use_container_width=True)
-
-    ann_hist = os.path.join(config.OUTPUT_DIR, "ann_training_history.png")
-    if os.path.exists(ann_hist):
-        st.image(ann_hist, caption="ANN Training History", use_container_width=True)
-
-    # ── Footer ─────────────────────────────────────────────────
-    st.markdown("---")
-    st.markdown(
-        "<small>Stacking Ensemble: Random Forest · XGBoost · "
-        "Logistic Regression · Neural Network</small>",
-        unsafe_allow_html=True,
-    )
+    
 
 
 if __name__ == "__main__":

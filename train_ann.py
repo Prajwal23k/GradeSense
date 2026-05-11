@@ -22,7 +22,7 @@ import config
 os.makedirs(config.MODEL_DIR, exist_ok=True)
 
 
-def build_ann(input_dim: int) -> Sequential:
+def build_ann(input_dim: int) -> Sequential:                           #data goes layer by layer
     """
     Architecture:
         Input → Dense(128) → BN → Dropout(0.3)
@@ -33,15 +33,15 @@ def build_ann(input_dim: int) -> Sequential:
     model = Sequential([
         Dense(128, activation="relu", input_shape=(input_dim,)),
         BatchNormalization(),
-        Dropout(0.3),
+        Dropout(0.3),                                     #prevents overfitting
 
         Dense(64, activation="relu"),
-        BatchNormalization(),
+        BatchNormalization(),                           #makes data stable
         Dropout(0.2),
 
         Dense(32, activation="relu"),
 
-        Dense(1, activation="sigmoid"),
+        Dense(1, activation="sigmoid"),             # 0 1
     ])
     model.compile(
         optimizer=Adam(learning_rate=1e-3),
